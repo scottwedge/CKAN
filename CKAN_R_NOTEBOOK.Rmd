@@ -1,0 +1,306 @@
+---
+title: "CKAN_QUERY"
+author: "K Sunil Joshi"
+date: "4/15/2019"
+
+
+params : 
+  df : County
+  df: Year
+  df :  Chemical_Name
+  
+output:
+  html_document
+---
+
+
+
+
+```{r}
+
+install.packages("devtools")
+install.packages("ckanr")
+library('ckanr')
+
+## setup ckan url to be tested
+
+ckanr_setup(url = "http://saturn04.ctg.albany.edu", key = "fadd2ba4-9d6a-40d6-98ba-9a984bdc1625")
+
+ckanr_settings()
+
+
+
+
+```
+
+```{r}
+
+###search for packages 
+x <- package_search(q = '*:*', rows = 1)
+x$results
+```
+
+```{r}
+## search for resource from ckan by passing url and resource-id(test_results id) as args
+
+res <- resource_show(id = "6d265cf0-ebea-4d6b-9ddf-524739f750fe",url = "http://saturn04.ctg.albany.edu" , as = "table")
+res
+```
+
+```{r}
+### setup url and fetch ucntion is used to directly query data from resource
+
+url<- "http://saturn04.ctg.albany.edu"
+data <- head(fetch(res$url))
+data
+```
+
+```{r}
+### using ds_serach fucntion we can filter data based on required columns
+
+
+ds_search(resource_id = '6d265cf0-ebea-4d6b-9ddf-524739f750fe',fields = "Characteristic_Name,Result Value,SAMPLE_DATE, SAMPLE_YEAR",url= url, limit =100, as = "table")
+
+```
+
+```{r}
+## using ds_serach_sql fucntion we can query for required data
+### similar to sql query pass as agrs in ds_serach_sql fucntion
+### here trying to get only required data from test_results , here we can get data as json , table or csv
+
+url<- "http://saturn04.ctg.albany.edu"
+
+sql <- 'SELECT "Characteristic_Name","Result Value","SAMPLE_DATE" ,"SAMPLE_YEAR", "LakeDatabase 2::County"
+      from "6d265cf0-ebea-4d6b-9ddf-524739f750fe" LIMIT 1000'
+
+filtered_data <- ds_search_sql(sql, url = url, as = "table")
+
+filtered_data
+
+```
+
+```{r}
+class(filtered_data)
+
+df <- as.data.frame(filtered_data)
+df
+
+
+
+```
+
+```{r}
+colnames(df)[1:5] <- c("County","Result_Value","DATE" , "Chemical_Name","Year")
+
+df
+
+```
+```{r}
+
+library(dplyr)
+
+select(df, County, Result_Value, Chemical_Name,Year)
+
+df
+```
+
+```{r}
+library(dplyr)
+library(knitr)
+
+param_df<- df %>% filter(Chemical_Name == params$chemical , Year == params$year , County == params$county) 
+
+param_df
+```
+
+```{r echo  = FALSE}
+library(knitr)
+df2<- select(df, params$County, params$Chemical_Name,params$Year)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
