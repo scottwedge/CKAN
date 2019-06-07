@@ -1,0 +1,100 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+### install required libarries and packages
+
+install.packages("devtools")
+install.packages("ckanr")
+library('ckanr')
+library(dplyr)
+```
+
+```{r}
+## setup ckan url to be tested
+
+ckanr_setup(url = "http://saturn04.ctg.albany.edu", key = "fadd2ba4-9d6a-40d6-98ba-9a984bdc1625")
+
+ckanr_settings()
+```
+
+```{r}
+###search for packages
+x <- package_search(q = '*:*', rows = 1)
+x$results
+```
+
+```{r}
+## search for resource from ckan by passing url and resource-id(test_results id) as args
+
+res <- resource_show(id = "6d265cf0-ebea-4d6b-9ddf-524739f750fe",url = "http://saturn04.ctg.albany.edu" , as = "table")
+res
+```
+
+```{r}
+### setup url and fetch ucntion is used to directly query data from resource
+
+url<- "http://saturn04.ctg.albany.edu"
+data <- head(fetch(res$url))
+data
+```
+
+```{r}
+### using ds_serach fucntion we can filter data based on required columns
+
+
+DATA<- ds_search(resource_id = '6d265cf0-ebea-4d6b-9ddf-524739f750fe',fields = "Characteristic_Name,Result Value,SAMPLE_DATE",url = url, limit =100, as = "table")
+DATA
+```
+
+```{r}
+## using ds_serach_sql fucntion we can query for required data
+### similar to sql query pass as agrs in ds_serach_sql fucntion
+### here trying to get only required data from test_results , here we can get data as json , table or csv
+
+url<- "http://saturn04.ctg.albany.edu"
+
+sql <- 'SELECT "Characteristic_Name","Result Value","SAMPLE_DATE" , "LakeDatabase 2::County"
+from "6d265cf0-ebea-4d6b-9ddf-524739f750fe" LIMIT 1000'
+
+```
+
+
+```{r}
+### data in table format
+filtered_data <- ds_search_sql(sql, url = url, as = "table")
+
+filtered_data
+
+# ### data in josn format
+# filtered_data_json <- ds_search_sql(sql, url = url, as = "json")
+#
+# filtered_data_json
+```
+
+```{r}
+## covert tabke data to dataframe and rename column names 
+class(filtered_data)
+
+df <- as.data.frame(filtered_data)
+df
+
+colnames(df)[1:5] <- c("County","Result_Value","DATE" , "Chemical_Name","Year")
+
+df
+```
+
+```{r}
+
+### create a dataframe with required columns
+library(dplyr)
+
+select(df, County, Result_Value, Chemical_Name,Year)
+
+df
+```
+
+
+
